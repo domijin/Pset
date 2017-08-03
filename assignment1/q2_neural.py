@@ -25,13 +25,21 @@ def forward_backward_prop(data, labels, params, dimensions):
     ofs += H * Dy
     b2 = np.reshape(params[ofs:ofs + Dy], (1, Dy))
 
-    ### YOUR CODE HERE: forward propagation
-    raise NotImplementedError
-    ### END YOUR CODE
+    N = data.shape[0]
+
+    h = sigmoid(data.dot(W1) + b1)
+    y = softmax(h.dot(W2) + b2)
+
+    cost = - np.sum(np.log(y[labels == 1]))/N
     
-    ### YOUR CODE HERE: backward propagation
-    raise NotImplementedError
-    ### END YOUR CODE
+
+    yp = ( y - labels ) / N
+    gradW2 = h.T.dot(yp)
+    gradb2 = np.sum(yp, axis=0)
+
+    hp = yp.dot(W2.T) * sigmoid_grad(h)
+    gradW1 = data.T.dot(hp)
+    gradb1 = np.sum(hp, axis=0)
     
     ### Stack gradients (do not modify)
     grad = np.concatenate((gradW1.flatten(), gradb1.flatten(), 
@@ -44,13 +52,13 @@ def sanity_check():
     Set up fake data and parameters for the neural network, and test using 
     gradcheck.
     """
-    print "Running sanity check..."
+    # print "Running sanity check..."
 
     N = 20
     dimensions = [10, 5, 10]
     data = np.random.randn(N, dimensions[0])   # each row will be a datum
     labels = np.zeros((N, dimensions[2]))
-    for i in xrange(N):
+    for i in range(N):
         labels[i,random.randint(0,dimensions[2]-1)] = 1
     
     params = np.random.randn((dimensions[0] + 1) * dimensions[1] + (
